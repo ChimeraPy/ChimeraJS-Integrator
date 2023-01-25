@@ -1,22 +1,33 @@
 import mitt, { Emitter } from 'mitt'
+import { App, Plugin } from 'vue'
 
 interface IOptions {
-    emitter: Emitter<any> | null
-    eventArray: string[]
+  emitter: Emitter<any> | null
+  eventArray: string[]
 }
 
-const defaultOptions = {
-    emitter: null,
-    eventArray: []
-} as IOptions
+// const defaultOptions = {
+//   emitter: mitt(),
+//   eventArray: []
+// } as IOptions
 
-export const ChimeraJSIntegrator = {
+// export const ChimeraJSIntegrator: Plugin = {
 
-    // Install required for Vue Plugin
-    install: (Vue, options) => {
-        
-        // Saving input parameters
-        ChimeraJSIntegrator.Vue = Vue
-        ChimeraJSIntegrator.options = {...defaultOptions, ...options}
-    }
+//   // Install required for Vue Plugin
+//   install: (Vue: App, options: IOptions) => {
+      
+//     // Saving input parameters
+//     // ChimeraJSIntegrator.options = {...defaultOptions, ...options}
+//     console.log(Vue, options)
+    
+//   }
+// }
+
+export default class ChimeraJSIntegrator {
+
+  static install: (Vue: App, options: IOptions) => void
+
+  install(Vue: App, options: IOptions) {
+    console.log(options)
+  }
 }

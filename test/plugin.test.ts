@@ -1,14 +1,32 @@
-// import mitt, { Emitter } from 'mitt'
-// import { ChimeraJSIntegrator } from '../src/ChimeraJSIntegrator'
+import { createApp, defineComponent } from 'vue'
+import mitt from 'mitt'
+import ChimeraJSIntegrator from '../src/ChimeraJSIntegrator'
 
-// describe('installing plugin should broadcast event bus', () => {
+// Create dummy Vue app
+const dummyApp = defineComponent({
+  name: "App"
+})
 
-    // Setup
-    // beforeEach(() => {
+describe('installing plugin should broadcast event bus', () => {
 
-    // })
-// })
+  // Setup
+  beforeEach(() => {
 
-test('asdf', () => {
-    expect(1).toBe(1)
+    // Create emitter and Vue app
+    const emitter = mitt()
+    const app = createApp(dummyApp)
+
+    // Mock Install
+    const cpjs = new ChimeraJSIntegrator()
+    cpjs.install(app, {
+      emitter: emitter,
+      eventArray: []
+    })
+  })
+
+  // Tests
+  test('setup', () => {
+    console.log("Setup success")
+  })
+
 })
