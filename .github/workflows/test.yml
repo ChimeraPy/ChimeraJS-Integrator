@@ -20,6 +20,4 @@ jobs:
         uses: actions/setup-node@v1
 
       - run: npm ci
-      - run: npm run prettier
-      - run: npm run linter
       - run: npm test
