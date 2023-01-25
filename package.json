@@ -1,0 +1,31 @@
+{
+  "name": "chimerajs",
+  "version": "0.0.1",
+  "description": "Communication Extension for JS to ChimeraPy's Pythonic Runtime Environment",
+  "main": "src/ChimeraJSIntegrator.ts",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oele-isis-vanderbilt/ChimeraJS.git"
+  },
+  "keywords": [
+    "communication",
+    "ChimeraPy",
+    "data",
+    "analysis"
+  ],
+  "author": "Eduardo Davalos",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/oele-isis-vanderbilt/ChimeraJS/issues"
+  },
+  "homepage": "https://github.com/oele-isis-vanderbilt/ChimeraJS#readme",
+  "dependencies": {
+    "mitt": "^3.0.0"
+  }
+}
