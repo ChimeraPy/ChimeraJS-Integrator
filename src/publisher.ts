@@ -8,49 +8,50 @@ const cjsLogger: ILogger = jsLogger.get('chimerajs')
 export default class Publisher {
   sock: zmq.Publisher
   eventsToProcess: number
+  port: number | null
+  binded: boolean
+  tasks: Promise<boolean>[]
 
   constructor() {
     // Initialized the socket
     this.sock = new zmq.Publisher()
     this.eventsToProcess = 0
+    this.port = null
+    this.binded = false
+    this.tasks = []
   }
 
-  public async bind(port: number) {
-    await this.sock.bind("tcp://*:" + port)
+  bind(port: number) {
+    this.port = port
   }
 
-  public async publish(eventType: any, eventData: any) {
-    // Variables tracking success
-    let failureCounter = 0
-    this.eventsToProcess += 1
+  publish(eventType: any, eventData: any) {
+   
+    if (this.binded == false) {
 
-    while (true) {
-      try {
-        await this.sock.send([eventType, eventData])
-        cjsLogger.debug('Publisher: published ' + eventType + ' successful')
-        break
-      } catch {
-        failureCounter += 1
+      const bindTask = new Promise<boolean>(async (resolve, reject) => {
+        await this.sock.bind("tcp://*:" + this.port)
+        return resolve(true)
+      })
+      this.tasks.push(bindTask)
 
-        // If failure too much, stop trying to send
-        if (failureCounter >= 50) {
-          break
-        }
-      }
+      this.binded = true
     }
 
-    // Mark completion
-    this.eventsToProcess -= 1
+    const sendTask = new Promise<boolean>(async (resolve, reject) => {
+      await this.sock.send([eventType, eventData])
+      cjsLogger.debug('Publisher: published ' + eventType + ' successful')
+      return resolve(true)
+    })
   }
 
-  flush(numAttemps: number = 100) {
-    let failureCounter = 0
-    while(this.eventsToProcess != 0) {
-      failureCounter += 1
-      if (failureCounter > numAttemps){
-        cjsLogger.debug('Publisher: failed to flush')
-        break
-      }
-    }
+  flush(): Promise<boolean> {
+    const allPromises = new Promise<boolean>((resolve, reject) => {
+    })
+    return allPromises
+  }
+
+  close() {
+    this.sock.close()
   }
 }

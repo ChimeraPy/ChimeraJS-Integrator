@@ -5,7 +5,8 @@ import { Deque } from '@datastructures-js/deque'
 import jsLogger, { ILogger } from 'js-logger'
 
 // Internal Imports
-import  Publisher from './publisher'
+import Publisher from './publisher'
+import Subscriber from './subscriber'
 
 // Create logger
 jsLogger.useDefaults()
@@ -15,12 +16,16 @@ interface IOptions {
   emitter: Emitter<any>
   eventArray: string[]
   pubPort: number
+  subIP: string
+  subPort: number
 }
 
 const defaultOptions = {
   emitter: mitt<any>(),
   eventArray: [],
-  pubPort: 5555
+  pubPort: 5555,
+  subIP: "127.0.0.1",
+  subPort: 3333
 } as IOptions
 
 export default class ChimeraJSIntegrator {
@@ -28,6 +33,7 @@ export default class ChimeraJSIntegrator {
   options: IOptions
   eventsDeque: Deque<any>
   pub: Publisher
+  sub: Subscriber
 
   static install: (Vue: App, options: IOptions) => void
 
@@ -38,6 +44,7 @@ export default class ChimeraJSIntegrator {
     this.options = defaultOptions
     this.eventsDeque = new Deque<any>()
     this.pub = new Publisher()
+    this.sub = new Subscriber()
   }
 
   install(Vue: App, options: IOptions) {
@@ -52,8 +59,12 @@ export default class ChimeraJSIntegrator {
       this.processEvent(type, e)
     })
 
-    // Bind publisher with the options
+    // Just storing the option, binding at the first event
     this.pub.bind(this.options.pubPort)
+
+    // Connect subscriber to the options
+    // this.sub.saveEmitter(this.options.emitter)
+    // this.sub.connect(this.options.subIP, this.options.subPort)
 
   }
 
@@ -71,5 +82,9 @@ export default class ChimeraJSIntegrator {
 
   flush(timeout: number = 5000) {
     this.pub.flush(timeout)
+  }
+
+  shutdown() {
+    this.pub.close()
   }
 }

@@ -19,7 +19,9 @@ const cpjs = new ChimeraJSIntegrator()
 cpjs.install(app, {
   emitter: emitter,
   eventArray: [],
-  pubPort: 5555
+  pubPort: 7777,
+  subIP: '127.0.0.1',
+  subPort: 6767
 })
 
 // Tests
