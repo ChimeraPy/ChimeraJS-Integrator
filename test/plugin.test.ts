@@ -6,6 +6,7 @@ import ChimeraJSIntegrator from '../src/ChimeraJSIntegrator'
 const dummyApp = defineComponent({
   name: "App"
 })
+const app = createApp(dummyApp)
 
 describe('installing plugin should broadcast event bus', () => {
 
@@ -14,7 +15,6 @@ describe('installing plugin should broadcast event bus', () => {
 
     // Create emitter and Vue app
     const emitter = mitt()
-    const app = createApp(dummyApp)
 
     // Mock Install
     const cpjs = new ChimeraJSIntegrator()
@@ -27,6 +27,10 @@ describe('installing plugin should broadcast event bus', () => {
   // Tests
   test('setup', () => {
     console.log("Setup success")
+  })
+
+  test('obtaining emitted events', () => {
+    console.log("")
   })
 
 })
