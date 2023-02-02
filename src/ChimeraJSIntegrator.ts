@@ -1,12 +1,9 @@
 // Third-party
+import * as zmq from 'jszmq'
 import mitt, { Emitter } from 'mitt'
 import { App } from 'vue'
 import { Deque } from '@datastructures-js/deque'
 import jsLogger, { ILogger } from 'js-logger'
-
-// Internal Imports
-import Publisher from './publisher'
-import Subscriber from './subscriber'
 
 // Create logger
 jsLogger.useDefaults()
@@ -31,9 +28,10 @@ const defaultOptions = {
 export default class ChimeraJSIntegrator {
   app: App | null
   options: IOptions
-  eventsDeque: Deque<any>
-  pub: Publisher
-  sub: Subscriber
+  sendEventDeque: Deque<any>
+  receivedEventDeque: Deque<any>
+  pub: zmq.XPub
+  sub: zmq.Sub
 
   static install: (Vue: App, options: IOptions) => void
 
@@ -42,9 +40,10 @@ export default class ChimeraJSIntegrator {
     // Initial values of state variables
     this.app = null
     this.options = defaultOptions
-    this.eventsDeque = new Deque<any>()
-    this.pub = new Publisher()
-    this.sub = new Subscriber()
+    this.sendEventDeque = new Deque<any>()
+    this.receivedEventDeque = new Deque<any>()
+    this.pub = new zmq.XPub()
+    this.sub = new zmq.Sub()
   }
 
   install(Vue: App, options: IOptions) {
@@ -56,35 +55,57 @@ export default class ChimeraJSIntegrator {
     // Then add the function to the mitt instance to capture the requested
     // events
     this.options.emitter.on('*', (type, e) => {
-      this.processEvent(type, e)
+      if (this.options.eventArray.length == 0 || this.options.eventArray.includes(type.toString())) {
+        this.sendEvent(type, e)
+      }
     })
 
     // Just storing the option, binding at the first event
-    this.pub.bind(this.options.pubPort)
+    this.pub.bind("ws://127.0.0.1:" + this.options.pubPort.toString())
 
     // Connect subscriber to the options
-    // this.sub.saveEmitter(this.options.emitter)
-    // this.sub.connect(this.options.subIP, this.options.subPort)
+    this.sub.connect("ws://" + this.options.subIP + ":" + this.options.subPort)
+    this.sub.subscribe('chimerapy')
+
+    // Adding relay from sub to emitter
+    this.sub.on('message', (eventType, eventData) => {
+      this.receiveEvent(eventType, eventData)
+    })
 
   }
 
-  processEvent(event: any, e: any) {
+  sendEvent(event: any, e: any) {
+
+    // Don't repeat chimerajs messages
+    if (event == 'chimerajs'){
+      return 
+    }
 
     // Logging for information
     cjsLogger.debug('Processing Event: ' + event)
 
     // Send it via ZeroMQ
-    this.pub.publish(event, e)
+    this.pub.send(['chimerajs', event, JSON.stringify(e)])
     
     // Record event for testing
-    this.eventsDeque.pushFront(event)
+    this.sendEventDeque.pushFront(event)
   }
 
-  flush(timeout: number = 5000) {
-    this.pub.flush(timeout)
-  }
+  receiveEvent(event: any, e: any) {
+    
+    // Record event for testing
+    this.receivedEventDeque.pushFront(event.toString())
+
+    // Transmit via the local emitter
+    this.options.emitter.emit('chimerajs', {'event': event.toString(), 'data': JSON.parse(e)})
+
+}
 
   shutdown() {
     this.pub.close()
+    try {
+      this.sub.close()
+    } catch (error) {
+    }
   }
 }

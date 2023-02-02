@@ -1,5 +1,6 @@
 # ChimeraJS
 
+![tests](https://img.shields.io/github/actions/workflow/status/oele-isis-vanderbilt/ChimeraJS/test.yml)
 [![npm](https://img.shields.io/npm/v/chimerajs)](https://npmjs.com/package/chimerajs)
 ![license](https://img.shields.io/github/license/oele-isis-vanderbilt/ChimeraJS)
 
@@ -40,7 +41,10 @@ const emitter = mitt()
 // capture all events and broadcast
 app.use(ChimeraJSIntegrator {
     emitter: emitter,
-    eventArray: ['event1', 'event1']
+    eventArray: ['event1', 'event1'],
+    subPort: 7777,
+    subIP: '192.168.1.102',
+    pubPort: 6767
 })
 
 // Then mount app
@@ -49,12 +53,13 @@ app.mount('#app')
 
 ### Option Parameters
 
-| Parameter Name | type         | accepted or example inputs | required            | description                                                                                                                                 |
-|----------------|--------------|----------------------------|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| emitter        | mitt.Emitter | mitt()                     | true                | The emitter used to communicate between the front-end application and the ChimeraPy cluster.                                                |
-| eventArray     | string[]     | ['event1', 'event2'] or [] | false, default = [] | Provide an array of events to listen, or [] implies all events will be broadcast. BEWARE: avoid broadcasting sensitive data like passwords. |
-
-After installing ChimeraJS and running your application, you would want to run the python-side of ChimeraPy to obtain the events. The Node implementation can be found here: TODO
+| Parameter  | Type         | Accepted or Example inputs | Required | Description                                                                                                                                  |
+|------------|--------------|----------------------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| emitter    | mitt.Emitter | mitt()                     | True     | The emitter used to communicate between the JS application and ChimeraPy cluster                                                             |
+| eventArray | string[]     | ['event1', 'event2'] or [] | False    | Provide an array of events to listen and distribute. [] implies that all events will be broadcast. BEWARE: avoid broadcasting sensitive data |
+| subPort    | number       | 7777                       | False    | The port the JS SUB will bind to the ChimeraPy Cluster's PUB (the PUB's port)                                                                |
+| subIP      | string       | '127.0.0.1' or another IP  | False    | The IP of the JS SUB will bind to the the ChimeraPy Cluster's PUB (the PUB's IP)                                                             |
+| pubPort    | number       | 6767                       | False    | The port of the JS PUB that the ChimeraPy's SUB will bind to.                                                                                |
 
 ## Example
 
