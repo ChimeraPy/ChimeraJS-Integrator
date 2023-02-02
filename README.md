@@ -1,23 +1,19 @@
-# ChimeraJS
+# ChimeraJS Integrator
 
 ![tests](https://img.shields.io/github/actions/workflow/status/oele-isis-vanderbilt/ChimeraJS/test.yml)
-[![npm](https://img.shields.io/npm/v/chimerajs)](https://npmjs.com/package/chimerajs)
+[![npm](https://img.shields.io/npm/v/chimera-js-integrator)](https://npmjs.com/package/chimera-js-integrator)
 ![license](https://img.shields.io/github/license/oele-isis-vanderbilt/ChimeraJS)
 
-Communication Extension for JS to ChimeraPy's Pythonic Runtime Environment
+Communication Extension for JS to ChimeraPy's Pythonic Runtime Environment using ZeroMQ
 
 ![Architecture Diagram](./docs/_static/ChimeraJS.drawio.png)
-
-## Compatibility
-
-Currently, the plugin is only available for VueJS applications, but it's open to PRs to extend to other tech stacks and frameworks.
 
 ## Installation
 
 Use the following command to install the package:
 
 ```bash
-npm install chimerajs
+npm install chimera-js-integrator
 ```
 
 ## Usage
@@ -25,13 +21,8 @@ npm install chimerajs
 First, you need to install the plugin to your Vue application. Use the following to start:
 
 ```js
-import { createApp } from 'vue'
-import App from '@/App.vue'
 import { ChimeraJSIntegrator } from 'chimerajs'
 import mitt from 'mitt'
-
-// Create application
-const app = createApp(App)
 
 // Create the emitter
 const emitter = mitt()
@@ -40,18 +31,14 @@ const emitter = mitt()
 // You can also omit the eventArray parameter if you can to
 // capture all events and broadcast
 chimerajs = new ChimeraJSIntegrator()
-app.config.globalProperties.$chimerajs = chimerajs
-app.config.globalProperties.$chimerajs.install(
+chimerajs.install(
     emitter: emitter,
-    eventArray: ['event1', 'event1'],
+    eventArray: ['event1', 'event1'], // Or []
     subPort: 7777,
     subIP: '192.168.1.102',
-    pubPort: 6767
-})
+    repPort: 6767
+)
 
-
-// Then mount app
-app.mount('#app')
 ```
 
 ### Option Parameters
@@ -62,7 +49,7 @@ app.mount('#app')
 | eventArray | string[]     | ['event1', 'event2'] or [] | False    | Provide an array of events to listen and distribute. [] implies that all events will be broadcast. BEWARE: avoid broadcasting sensitive data |
 | subPort    | number       | 7777                       | False    | The port the JS SUB will bind to the ChimeraPy Cluster's PUB (the PUB's port)                                                                |
 | subIP      | string       | '127.0.0.1' or another IP  | False    | The IP of the JS SUB will bind to the the ChimeraPy Cluster's PUB (the PUB's IP)                                                             |
-| pubPort    | number       | 6767                       | False    | The port of the JS PUB that the ChimeraPy's SUB will bind to.                                                                                |
+| repPort    | number       | 6767                       | False    | The port the JS REQ will bind to the ChimeraPy's REP (The REP's IP).                                                                                |
 
 ## Example
 
