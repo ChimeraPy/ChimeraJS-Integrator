@@ -15,7 +15,7 @@ function setup(): {cpjs: ChimeraJSIntegrator, emitter:Emitter<any>} {
   cpjs.install({
     emitter: emitter,
     eventArray: ['hello'],
-    reqPort: 7777,
+    repPort: 7777,
     subIP: '127.0.0.1',
     subPort: 6767
   })
@@ -40,7 +40,7 @@ test('sending events via ZeroMQ', (done) => {
 
   // Create a mock sub (from Python ChimeraPy)
   const mock_rep = new zmq.Rep()
-  mock_rep.bind('ws://127.0.0.1:'+cpjs.options.reqPort)
+  mock_rep.bind('ws://127.0.0.1:'+cpjs.options.repPort)
 
   // Just for this testing, we need to shutdown the SUB
   try {
