@@ -1,24 +1,18 @@
 // Third-party
 import * as zmq from 'jszmq'
-import { createApp, defineComponent } from 'vue'
 import mitt, { Emitter } from 'mitt'
 
 // Internal
 import ChimeraJSIntegrator from '../src/ChimeraJSIntegrator'
 
 function setup(): {cpjs: ChimeraJSIntegrator, emitter:Emitter<any>} {
-  // Create dummy Vue app
-  const dummyApp = defineComponent({
-    name: "App"
-  })
-  const app = createApp(dummyApp)
       
   // Create emitter and Vue app
   const emitter = mitt<any>()
 
   // Mock Install
   const cpjs = new ChimeraJSIntegrator()
-  cpjs.install(app, {
+  cpjs.install({
     emitter: emitter,
     eventArray: ['hello'],
     pubPort: 7777,

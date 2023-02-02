@@ -1,7 +1,6 @@
 // Third-party
 import * as zmq from 'jszmq'
 import mitt, { Emitter } from 'mitt'
-import { App } from 'vue'
 import { Deque } from '@datastructures-js/deque'
 import jsLogger, { ILogger } from 'js-logger'
 
@@ -26,19 +25,17 @@ const defaultOptions = {
 } as IOptions
 
 export default class ChimeraJSIntegrator {
-  app: App | null
   options: IOptions
   sendEventDeque: Deque<any>
   receivedEventDeque: Deque<any>
   pub: zmq.XPub
   sub: zmq.Sub
 
-  static install: (Vue: App, options: IOptions) => void
+  static install: (options: IOptions) => void
 
   constructor() {
 
     // Initial values of state variables
-    this.app = null
     this.options = defaultOptions
     this.sendEventDeque = new Deque<any>()
     this.receivedEventDeque = new Deque<any>()
@@ -46,10 +43,9 @@ export default class ChimeraJSIntegrator {
     this.sub = new zmq.Sub()
   }
 
-  install(Vue: App, options: IOptions) {
+  install(options: IOptions) {
 
     // Extend the options
-    this.app = Vue
     this.options = {...defaultOptions, ...options}
 
     // Then add the function to the mitt instance to capture the requested

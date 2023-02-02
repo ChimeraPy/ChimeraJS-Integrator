@@ -39,7 +39,7 @@ const emitter = mitt()
 // Install plugin (provide the emitter instance from mitt)
 // You can also omit the eventArray parameter if you can to
 // capture all events and broadcast
-app.use(ChimeraJSIntegrator {
+app.use(ChimeraJSIntegrator, {
     emitter: emitter,
     eventArray: ['event1', 'event1'],
     subPort: 7777,
