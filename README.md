@@ -21,7 +21,7 @@ npm install chimera-js-integrator
 First, you need to install the plugin to your Vue application. Use the following to start:
 
 ```js
-import { ChimeraJSIntegrator } from 'chimerajs'
+import { ChimeraJSIntegrator } from 'chimera-js-integrator'
 import mitt from 'mitt'
 
 // Create the emitter
