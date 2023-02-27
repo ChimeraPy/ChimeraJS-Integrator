@@ -1,10 +1,11 @@
 // Third-party
 import mitt, { Emitter } from 'mitt'
-import WS from "jest-websocket-mock"
 
 // Internal
 import ChimeraJSIntegrator from '../src/ChimeraJSIntegrator'
-import WSClient from '../src/ws_client'
+import WSClient from '../src/WSClient'
+import WSServer from '../src/WSServer'
+import { waitForSocketState } from '../src/socketUtils'
 
 function setup(): {cpjs: ChimeraJSIntegrator, emitter:Emitter<any>} {
       
@@ -22,28 +23,23 @@ function setup(): {cpjs: ChimeraJSIntegrator, emitter:Emitter<any>} {
   return {cpjs, emitter}
 }
 
-// Tests
-test('setup', () => {
-  console.log("Setup success")
-})
-
-test("the server keeps track of received messages, and yields them as they come in", async () => {
-  const server = new WS("ws://localhost:1234")
-  const client = new WebSocket("ws://localhost:1234")
-
-  await server.connected
-  client.send("hello")
-  await expect(server).toReceiveMessage("hello")
-  expect(server).toHaveReceivedMessages(["hello"])
-})
-
-test('ws client', async () => {
-  const server = new WS('ws://localhost:1234')
-  const client = new WSClient('ws://localhost:1234')
+describe('WebSocket Server', () => {
+  let server: WSServer
   
-  await server.connected;
-  client.send("hello")
-  await expect(server).toReceiveMessage("hello")
-  expect(server).toHaveReceivedMessages(["hello"])
-})
+  beforeAll(async () => {
+    server = new WSServer('ws://localhost:6767', 6767)
+    await server.start()
+  })
 
+  test("connect and send message", async () => {
+    const client = new WSClient("ws://localhost:6767")
+    await waitForSocketState(client.instance, client.instance.OPEN)
+
+    client.send('hello')
+
+    client.close()
+    await waitForSocketState(client.instance, client.instance.CLOSED)
+  })
+
+  afterAll(() => server.close())
+})

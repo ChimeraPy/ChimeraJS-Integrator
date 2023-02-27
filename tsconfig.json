@@ -16,6 +16,7 @@
     "noImplicitAny": false,
     "baseUrl": ".",
     "types": [
+      "node",
       "webpack-env",
       "jest"
     ],
