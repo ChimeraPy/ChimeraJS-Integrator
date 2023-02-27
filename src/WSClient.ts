@@ -1,56 +1,38 @@
 import WebSocket from 'isomorphic-ws'
-import { Deque } from '@datastructures-js/deque'
 import { waitForSocketState } from '../src/socketUtils'
-
-// Define WSClient instance
-interface IOptions {
-  reconnectInterval?: number
-  reconnecting?: boolean
-  debug?: boolean
-}
-
-const defaultOptions: IOptions = {
-  reconnectInterval: 1000,
-  reconnecting: false,
-  debug: true,
-}
 
 export default class WSClient {
   url: string
-  // options: IOptions
-  instance?: WebSocket
-  receiveMessages: Deque<any>
+  closeAfter: number
+  ws?: WebSocket
+  messages: Array<any>
 
-  constructor(url: string, closeAfter?: number) {
+  constructor(url: string, closeAfter: number = -1) {
     this.url = url
-    this.receiveMessages = new Deque<any>()
-    // this.options = {...defaultOptions, ...options} 
-    this.instance = new WebSocket(this.url)
-
-    this.instance.onconnection = () => {
-      console.log('WSClient connected!')
-    }
-
-    this.instance.onmessage = (data: any) => {
-      this.receiveMessages.pushFront(data)
-
-      if (this.receiveMessages.size() === closeAfter){
-        this.instance.close()
-      }
-    }
+    this.closeAfter = closeAfter 
+    this.messages = []
   }
 
   async connect() {
-    await waitForSocketState(this.instance, this.instance.OPEN)
+    this.ws = new WebSocket(this.url);
+    await waitForSocketState(this.ws, this.ws.OPEN);
+
+    this.ws.on("message", (message) => {
+      const data = JSON.parse(message)
+      this.messages.push(data);
+
+      if (this.messages.length === this.closeAfter) {
+        this.ws.close();
+      }
+    });
   }
 
   // Send the content
   send(content: any) {
-    this.instance?.send(JSON.stringify(content))
-    console.log("Sent: " + content)
+    this.ws?.send(JSON.stringify(content))
   }
 
   async close() {
-    await waitForSocketState(this.instance, this.instance.CLOSED)
+    await waitForSocketState(this.ws, this.ws.CLOSED)
   }
 }
