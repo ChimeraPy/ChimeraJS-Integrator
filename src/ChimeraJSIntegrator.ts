@@ -8,6 +8,7 @@ import WebSocket from 'isomorphic-ws'
 // Create logger
 jsLogger.useDefaults()
 const cjsLogger: ILogger = jsLogger.get('chimerajs')
+jsLogger.setLevel(jsLogger.INFO)
 
 interface IOptions {
   emitter: Emitter<any>
@@ -88,7 +89,7 @@ export default class ChimeraJSIntegrator {
     }
 
     // Logging for information
-    cjsLogger.debug('Processing Event: ' + event)
+    cjsLogger.info('Processing Event: ' + event)
 
     // Send it via ZeroMQ
     let msg = {
