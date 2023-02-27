@@ -8,7 +8,6 @@ import WebSocket from 'isomorphic-ws'
 // Create logger
 jsLogger.useDefaults()
 const cjsLogger: ILogger = jsLogger.get('chimerajs')
-jsLogger.setLevel(jsLogger.INFO)
 
 interface IOptions {
   emitter: Emitter<any>

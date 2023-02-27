@@ -7,7 +7,7 @@ import jsLogger, { ILogger } from 'js-logger'
 // Create logger
 jsLogger.useDefaults()
 const cjsLogger: ILogger = jsLogger.get('chimerajs')
-jsLogger.setLevel(jsLogger.DEBUG)
+cjsLogger.setLevel(jsLogger.DEBUG)
 
 const port = 3000 + Number(process.env.JEST_WORKER_ID);
 
@@ -71,7 +71,7 @@ describe('WebSocket Server with Class Implementation', () => {
       expect(responseMessage).toStrictEqual(testMessage);
     
       server.close()
-    }, 5000)
+    }, 14000)
       
     await client.waitConnect()
     await client.waitClose()

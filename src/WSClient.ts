@@ -6,7 +6,6 @@ import jsLogger, { ILogger } from 'js-logger'
 // Create logger
 jsLogger.useDefaults()
 const cjsLogger: ILogger = jsLogger.get('chimerajs')
-jsLogger.setLevel(jsLogger.INFO)
 
 export default class WSClient {
   url: string
@@ -16,7 +15,7 @@ export default class WSClient {
   messages: Array<Message>
   shutdown: boolean
 
-  constructor(url: string, closeAfter: number = -1, debug: boolean = true, reconnectInterval: number = 500) {
+  constructor(url: string, closeAfter: number = -1, debug: boolean = true, reconnectInterval: number = 5000) {
     this.url = url
     this.closeAfter = closeAfter 
     this.messages = []
@@ -30,13 +29,13 @@ export default class WSClient {
    
     // Setting event handler methods
     this.ws.on('open', (event: Event) => {
-      jsLogger.info("[ChimeraJS-WSClient]: Connection made to " + this.url) 
+      cjsLogger.info("[ChimeraJS-WSClient]: Connection made to " + this.url) 
       this.onopen(event)
     })
 
     this.ws.on("message", (data: string) => {
       const message: Message = JSON.parse(data)
-      jsLogger.info("[ChimeraJS-WSClient]: Obtain msg: " + message.type) 
+      cjsLogger.info("[ChimeraJS-WSClient]: Obtain msg: " + message.type) 
       this.messages.push(message);
 
       if (this.messages.length === this.closeAfter) {
@@ -48,7 +47,7 @@ export default class WSClient {
 
     this.ws.on('close', (event: CloseEvent) => {
       if (event.code == 1000) {
-        jsLogger.info("[ChimeraJS-WSClient]: Closing safely") 
+        cjsLogger.info("[ChimeraJS-WSClient]: Closing safely") 
       }
       this.onclose(event)
     })
@@ -57,7 +56,7 @@ export default class WSClient {
       // Keep retrying to connect
       setTimeout(() => {
         if (!this.shutdown) {
-          jsLogger.debug("[ChimeraJS-WSClient]: Reconnecting...")
+          cjsLogger.debug("[ChimeraJS-WSClient]: Reconnecting...")
           this.ws.close()
           this.connect() 
         }
@@ -90,7 +89,7 @@ export default class WSClient {
   // Send the content
   send(content: Message) {
     if (this.ws instanceof WebSocket && this.ws.readyState == this.ws.OPEN){
-      jsLogger.debug('[ChimeraJS-WSClient]: Sending msg: ' + content.toString())
+      jsLogger.debug('[ChimeraJS-WSClient]: Sending msg: ' + content.type)
       this.ws.send(JSON.stringify(content))
     }
   }

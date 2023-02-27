@@ -6,7 +6,6 @@ import jsLogger, { ILogger } from 'js-logger'
 // Create logger
 jsLogger.useDefaults()
 const cjsLogger: ILogger = jsLogger.get('chimerajs')
-jsLogger.setLevel(jsLogger.INFO)
 
 export default class WSServer {
   port: number
@@ -23,12 +22,12 @@ export default class WSServer {
     this.wsClients = []
 
     this.wss.on("connection", (webSocket: WebSocket) => {
-      jsLogger.info("[ChimeraJS-WSServer]: Obtain client connection")
+      cjsLogger.info("[ChimeraJS-WSServer]: Obtain client connection")
       this.wsClients.push(webSocket)
       
       webSocket.on("message", (stringMessage:string) => {
         let message: Message = JSON.parse(stringMessage)
-        jsLogger.debug("[ChimeraJS-WSServer]: Obtain msg: " + message.type)
+        cjsLogger.debug("[ChimeraJS-WSServer]: Obtain msg: " + message.type)
         this.onmessage(message, webSocket)
       })
     })
@@ -41,7 +40,7 @@ export default class WSServer {
   start() {
     return new Promise((resolve) => {
       this.server.listen(this.port, () => {
-        jsLogger.info("[ChimeraJS-WSServer]: Running WS Server at ws://localhost:" + this.port.toString())
+        cjsLogger.info("[ChimeraJS-WSServer]: Running WS Server at ws://localhost:" + this.port.toString())
         resolve(this.server)
       })
     })
