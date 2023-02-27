@@ -1,10 +1,10 @@
 // Third-party
 import mitt, { Emitter } from 'mitt'
 import WS from "jest-websocket-mock"
-import WebSocket from 'isomorphic-ws'
 
 // Internal
 import ChimeraJSIntegrator from '../src/ChimeraJSIntegrator'
+import WSClient from '../src/ws_client'
 
 function setup(): {cpjs: ChimeraJSIntegrator, emitter:Emitter<any>} {
       
@@ -37,14 +37,13 @@ test("the server keeps track of received messages, and yields them as they come 
   expect(server).toHaveReceivedMessages(["hello"])
 })
 
-test('connect', async () => {
-  // Setup
-  let {cpjs, emitter} = setup()
-  const server = new WS('ws://localhost:6767')
-  await server.connected;
+test('ws client', async () => {
+  const server = new WS('ws://localhost:1234')
+  const client = new WSClient('ws://localhost:1234')
   
-  // Teardown
-  // cpjs.shutdown()
-  server.close()
+  await server.connected;
+  client.send("hello")
+  await expect(server).toReceiveMessage("hello")
+  expect(server).toHaveReceivedMessages(["hello"])
 })
 
