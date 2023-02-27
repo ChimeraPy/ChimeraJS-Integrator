@@ -1,8 +1,9 @@
 // Third-party
-import * as zmq from 'jszmq'
+// import * as zmq from 'jszmq'
 import mitt, { Emitter } from 'mitt'
 import { Deque } from '@datastructures-js/deque'
 import jsLogger, { ILogger } from 'js-logger'
+import WebSocket from 'isomorphic-ws'
 
 // Create logger
 jsLogger.useDefaults()
@@ -11,25 +12,20 @@ const cjsLogger: ILogger = jsLogger.get('chimerajs')
 interface IOptions {
   emitter: Emitter<any>
   eventArray: string[]
-  repPort: number
-  subIP: string
-  subPort: number
+  wsPort: number
 }
 
 const defaultOptions = {
   emitter: mitt<any>(),
   eventArray: [],
-  repPort: 5555,
-  subIP: "127.0.0.1",
-  subPort: 3333
+  wsPort: 3333
 } as IOptions
 
 export default class ChimeraJSIntegrator {
   options: IOptions
   sendEventDeque: Deque<any>
   receivedEventDeque: Deque<any>
-  req: zmq.Req
-  sub: zmq.Sub
+  ws?: WebSocket
 
   static install: (options: IOptions) => void
 
@@ -39,8 +35,7 @@ export default class ChimeraJSIntegrator {
     this.options = defaultOptions
     this.sendEventDeque = new Deque<any>()
     this.receivedEventDeque = new Deque<any>()
-    this.req = new zmq.Req()
-    this.sub = new zmq.Sub()
+
   }
 
   install(options: IOptions) {
@@ -50,27 +45,37 @@ export default class ChimeraJSIntegrator {
 
     // Then add the function to the mitt instance to capture the requested
     // events
-    this.options.emitter.on('*', (type, e) => {
-      if (this.options.eventArray.length == 0 || this.options.eventArray.includes(type.toString())) {
-        this.sendEvent(type, e)
-      }
+    // this.options.emitter.on('*', (type, e) => {
+    //   if (this.options.eventArray.length == 0 || this.options.eventArray.includes(type.toString())) {
+    //     this.sendEvent(type, e)
+    //   }
+    // })
+    
+    // Connect WS
+    this.connect()
+    
+    // this.ws.addEventListener('open', (event) => {
+    //   this.ws.send(JSON.stringify({event: 'chimerajs', data: {success: true}})) 
+    // })
+
+    // this.ws.addEventListener('message', (event) => {
+    //   this.receiveEvent(event)
+    // })
+
+  }
+
+  connect(){
+    // Create the WS
+    this.ws = new WebSocket('ws://localhost:' + this.options.wsPort.toString())
+
+    this.ws.on('close', () => {
+      setTimeout(() => {
+        this.connect() 
+      }, 1000)
     })
 
-    // Just storing the option, binding at the first event
-    this.req.connect('ws://localhost:' + this.options.repPort)
-    this.req.on('message', (msg) => {
-      console.log('REQ: ', msg.toString())
-    })
-
-    // Making WS error not clutter the console
-
-    // // Connect subscriber to the options
-    this.sub.connect("ws://" + this.options.subIP + ":" + this.options.subPort)
-    this.sub.subscribe('')
-
-    // // Adding relay from sub to emitter
-    this.sub.on('message', (msg) => {
-      this.receiveEvent(JSON.parse(msg))
+    this.ws.on('error', () => {
+      this.ws.close()
     })
 
   }
@@ -90,7 +95,8 @@ export default class ChimeraJSIntegrator {
       'event': event,
       'data': e
     }
-    this.req.send(JSON.stringify(msg))
+
+    this.ws.send(JSON.stringify(msg))
     
     // Record event for testing
     this.sendEventDeque.pushFront(event)
@@ -100,21 +106,13 @@ export default class ChimeraJSIntegrator {
     
     // Record event for testing
     this.receivedEventDeque.pushFront(msg.toString())
-    console.log('SUB: ' + msg.event + ' ' + msg.data)
+    console.log('INCOMING: ' + msg.event + ' ' + msg.data)
 
     // Transmit via the local emitter
     this.options.emitter.emit('chimera', msg)
   }
 
   shutdown() {
-    try {
-      this.req.close()
-    } catch (error) {
-
-    }
-    try {
-      this.sub.close()
-    } catch (error) {
-    }
+    this.ws.close()
   }
 }
