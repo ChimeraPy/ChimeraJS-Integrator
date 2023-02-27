@@ -1,18 +1,6 @@
-// createWebSocketServer.js
-// import WebSocket from "ws";
-
-// function createWebSocketServer(server) {
-//   const wss = new WebSocket.Server({ server });
-//   wss.on("connection", function (webSocket) {
-//     webSocket.on("message", function (message) {
-//       webSocket.send(message);
-//     });
-//   });
-// }
-// export default createWebSocketServer;
-
 import http, {Server } from 'http'
 import WebSocket from 'isomorphic-ws'
+import { Deque } from '@datastructures-js/deque'
 
 // Define WSClient instance
 interface IOptions {
@@ -28,31 +16,38 @@ interface IOptions {
 // }
 
 export default class WSServer {
-  url: string
   port: number
   httpServer: Server
   wss: WebSocket
-  // options: IOptions
   instance?: WebSocket
+  receiveMessages: Deque<any>
 
-  constructor(url: string, port: number, options?: IOptions) {
-    this.url = url
+  constructor(port: number, options?: IOptions) {
     this.port = port
-    // this.options = {...defaultOptions, ...options} 
-    // this.instance = new WebSocket(this.url)
+    this.receiveMessages = new Deque<any>()
     this.httpServer = http.createServer()
     this.wss = new WebSocket.Server({server: this.httpServer})
 
     this.wss.onconnection = (ws: WebSocket) => {
-      ws.onmessage = (event: MessageEvent) => {
-        console.log(event.data)
+      
+      console.log("Server obtained connection!")
+
+      ws.onmessage = (event: any) => {
+        console.log(event)
+        const data = JSON.parse(event as string)
+        console.log(data)
+        this.receiveMessages.pushBack(data)
+        ws.send(event)
       }
     }
   }
 
   start() {
     return new Promise((resolve) => {
-      this.httpServer.listen(this.port, () => resolve(this.httpServer))
+      this.httpServer.listen(this.port, () => {
+        console.log("WSS Running at ws://localhost:" + this.port.toString())
+        resolve(true)
+      })
     })
   }
 
