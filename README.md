@@ -30,14 +30,7 @@ const emitter = mitt()
 // Install plugin (provide the emitter instance from mitt)
 // You can also omit the eventArray parameter if you can to
 // capture all events and broadcast
-chimerajs = new ChimeraJSIntegrator()
-chimerajs.install(
-    emitter: emitter,
-    eventArray: ['event1', 'event1'], // Or []
-    subPort: 7777,
-    subIP: '192.168.1.102',
-    repPort: 6767
-)
+const chimerajs = new ChimeraJSIntegrator(emitter, ['event1', 'event1'], 6767)
 
 ```
 
@@ -47,9 +40,7 @@ chimerajs.install(
 |------------|--------------|----------------------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------|
 | emitter    | mitt.Emitter | mitt()                     | True     | The emitter used to communicate between the JS application and ChimeraPy cluster                                                             |
 | eventArray | string[]     | ['event1', 'event2'] or [] | False    | Provide an array of events to listen and distribute. [] implies that all events will be broadcast. BEWARE: avoid broadcasting sensitive data |
-| subPort    | number       | 7777                       | False    | The port the JS SUB will bind to the ChimeraPy Cluster's PUB (the PUB's port)                                                                |
-| subIP      | string       | '127.0.0.1' or another IP  | False    | The IP of the JS SUB will bind to the the ChimeraPy Cluster's PUB (the PUB's IP)                                                             |
-| repPort    | number       | 6767                       | False    | The port the JS REQ will bind to the ChimeraPy's REP (The REP's IP).                                                                                |
+| wsPort     | number       | 6767 | False    | The port the integrator will bind to the ChimeraPy Cluster's WS Server (the WSS's port)                                                                |
 
 ## Example
 
