@@ -60,7 +60,7 @@ export default class ChimeraJSIntegrator {
     }
 
     // Send it via ZeroMQ
-    if (this.ws.ws.readyState == this.ws.ws.OPEN) {
+    if (this.ws.ws instanceof WebSocket && this.ws.ws.readyState == this.ws.ws.OPEN) {
       // Logging for information
       this.ws.send(msg)
       cjsLogger.info('[ChimeraJSIntegrator]: sending: ' + msg.event)

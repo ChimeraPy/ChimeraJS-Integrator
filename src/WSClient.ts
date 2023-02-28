@@ -10,7 +10,7 @@ const cjsLogger: ILogger = jsLogger.get('chimerajs')
 export default class WSClient {
   url: string
   closeAfter: number
-  ws?: WebSocket
+  ws: WebSocket
   reconnectInterval: number
   messages: Array<Message>
   shutdown: boolean
@@ -28,13 +28,13 @@ export default class WSClient {
     this.ws = new WebSocket(this.url);
    
     // Setting event handler methods
-    this.ws.onopen = (event: Event) => {
+    this.ws.onopen = (event: any) => {
       cjsLogger.info("[ChimeraJS-WSClient]: Connection made to " + this.url) 
       this.onopen(event)
     }
 
-    this.ws.onmessage = (data: string) => {
-      const message: Message = JSON.parse(data)
+    this.ws.onmessage = (event: MessageEvent) => {
+      const message: Message = JSON.parse(event.data)
       cjsLogger.info("[ChimeraJS-WSClient]: Obtain msg: " + message.event) 
       this.messages.push(message);
 
@@ -45,14 +45,14 @@ export default class WSClient {
       }
     }
 
-    this.ws.onclose = (event: CloseEvent) => {
+    this.ws.onclose = (event: any) => {
       if (event.code == 1000) {
         cjsLogger.info("[ChimeraJS-WSClient]: Closing safely") 
       }
       this.onclose(event)
     }
     
-    this.ws.onerror = (event: ErrorEvent) => {
+    this.ws.onerror = (event: any) => {
       // Keep retrying to connect
       setTimeout(() => {
         if (!this.shutdown) {
