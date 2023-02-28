@@ -3,7 +3,6 @@ import mitt, { Emitter } from 'mitt'
 
 import WebSocket from 'isomorphic-ws'
 import WSServer from '../src/WSServer'
-import WSClient from '../src/WSClient'
 import { Message } from '../src/Message'
 import ChimeraJSIntegrator from "../src/ChimeraJSIntegrator"
 

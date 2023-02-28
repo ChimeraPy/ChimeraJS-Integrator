@@ -9,6 +9,7 @@ import { Message } from './Message'
 // Create logger
 jsLogger.useDefaults()
 const cjsLogger: ILogger = jsLogger.get('chimerajs')
+cjsLogger.setLevel(jsLogger.INFO)
 
 export default class ChimeraJSIntegrator {
   emitter: Emitter<any>
@@ -18,7 +19,7 @@ export default class ChimeraJSIntegrator {
   receivedEventDeque: Deque<any>
   ws: WSClient
 
-  constructor(emitter: Emitter<any>, eventArray: Array<string> = [], wsPort: number = 6767, closeAfter: number = -1) {
+  constructor(emitter: Emitter<any>, eventArray: Array<string> = [], wsPort: number = 9100, closeAfter: number = -1) {
 
     // Initial values of state variables
     this.emitter = emitter
@@ -58,11 +59,15 @@ export default class ChimeraJSIntegrator {
       return 
     }
 
-    // Logging for information
-    cjsLogger.info('[ChimeraJSIntegrator]: sending: ' + msg.event)
-
     // Send it via ZeroMQ
-    this.ws.send(msg)
+    if (this.ws.ws.readyState == this.ws.ws.OPEN) {
+      // Logging for information
+      this.ws.send(msg)
+      cjsLogger.info('[ChimeraJSIntegrator]: sending: ' + msg.event)
+    }
+    else {
+      cjsLogger.debug('[ChimeraJSIntegrator]: connection lost, not sending: ' + msg.event)
+    }
     
     // Record event for testing
     this.sendEventDeque.pushFront(msg.event)

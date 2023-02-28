@@ -28,12 +28,12 @@ export default class WSClient {
     this.ws = new WebSocket(this.url);
    
     // Setting event handler methods
-    this.ws.on('open', (event: Event) => {
+    this.ws.onopen = (event: Event) => {
       cjsLogger.info("[ChimeraJS-WSClient]: Connection made to " + this.url) 
       this.onopen(event)
-    })
+    }
 
-    this.ws.on("message", (data: string) => {
+    this.ws.onmessage = (data: string) => {
       const message: Message = JSON.parse(data)
       cjsLogger.info("[ChimeraJS-WSClient]: Obtain msg: " + message.event) 
       this.messages.push(message);
@@ -43,16 +43,16 @@ export default class WSClient {
         this.ws.close();
         this.shutdown = true
       }
-    })
+    }
 
-    this.ws.on('close', (event: CloseEvent) => {
+    this.ws.onclose = (event: CloseEvent) => {
       if (event.code == 1000) {
         cjsLogger.info("[ChimeraJS-WSClient]: Closing safely") 
       }
       this.onclose(event)
-    })
+    }
     
-    this.ws.on('error', (event: ErrorEvent) => {
+    this.ws.onerror = (event: ErrorEvent) => {
       // Keep retrying to connect
       setTimeout(() => {
         if (!this.shutdown) {
@@ -61,7 +61,7 @@ export default class WSClient {
           this.connect() 
         }
       }, this.reconnectInterval)
-    })
+    }
   }
   
   //////////////////////////////////////////////////////////////////////
