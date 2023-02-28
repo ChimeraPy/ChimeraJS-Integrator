@@ -1,120 +1,89 @@
 // Third-party
-import * as zmq from 'jszmq'
+// import * as zmq from 'jszmq'
 import mitt, { Emitter } from 'mitt'
 import { Deque } from '@datastructures-js/deque'
 import jsLogger, { ILogger } from 'js-logger'
+import WSClient from './WSClient'
+import { Message } from './Message'
 
 // Create logger
 jsLogger.useDefaults()
 const cjsLogger: ILogger = jsLogger.get('chimerajs')
-
-interface IOptions {
-  emitter: Emitter<any>
-  eventArray: string[]
-  repPort: number
-  subIP: string
-  subPort: number
-}
-
-const defaultOptions = {
-  emitter: mitt<any>(),
-  eventArray: [],
-  repPort: 5555,
-  subIP: "127.0.0.1",
-  subPort: 3333
-} as IOptions
+cjsLogger.setLevel(jsLogger.INFO)
 
 export default class ChimeraJSIntegrator {
-  options: IOptions
+  emitter: Emitter<any>
+  eventArray: string[]
+  wsPort: number
   sendEventDeque: Deque<any>
   receivedEventDeque: Deque<any>
-  req: zmq.Req
-  sub: zmq.Sub
+  ws: WSClient
 
-  static install: (options: IOptions) => void
-
-  constructor() {
+  constructor(emitter: Emitter<any>, eventArray: Array<string> = [], wsPort: number = 9100, closeAfter: number = -1) {
 
     // Initial values of state variables
-    this.options = defaultOptions
+    this.emitter = emitter
+    this.eventArray = eventArray
+    this.wsPort = wsPort
+    this.ws = new WSClient('ws://localhost:'+this.wsPort.toString(), closeAfter)
+    
+    // Variables for testing
     this.sendEventDeque = new Deque<any>()
     this.receivedEventDeque = new Deque<any>()
-    this.req = new zmq.Req()
-    this.sub = new zmq.Sub()
-  }
-
-  install(options: IOptions) {
-
-    // Extend the options
-    this.options = {...defaultOptions, ...options}
 
     // Then add the function to the mitt instance to capture the requested
     // events
-    this.options.emitter.on('*', (type, e) => {
-      if (this.options.eventArray.length == 0 || this.options.eventArray.includes(type.toString())) {
-        this.sendEvent(type, e)
+    this.emitter.on('*', (event, data) => {
+
+      const msg: Message = {
+        event: event.toString(), 
+        data: data
       }
+
+      if (msg.event != 'chimera' && (this.eventArray.length == 0 || this.eventArray.includes(msg.event.toString()))) {
+        this.sendEvent(msg)
+      }
+
     })
-
-    // Just storing the option, binding at the first event
-    this.req.connect('ws://localhost:' + this.options.repPort)
-    this.req.on('message', (msg) => {
-      console.log('REQ: ', msg.toString())
-    })
-
-    // Making WS error not clutter the console
-
-    // // Connect subscriber to the options
-    this.sub.connect("ws://" + this.options.subIP + ":" + this.options.subPort)
-    this.sub.subscribe('')
-
-    // // Adding relay from sub to emitter
-    this.sub.on('message', (msg) => {
-      this.receiveEvent(JSON.parse(msg))
-    })
+    
+    this.ws.onmessage = (msg: Message) => {
+      this.receiveEvent(msg)
+    }
 
   }
 
-  sendEvent(event: any, e: any) {
+  sendEvent(msg: Message) {
 
     // Don't repeat chimerajs messages
-    if (event == 'chimera'){
+    if (msg.event == 'chimera'){
       return 
     }
 
-    // Logging for information
-    cjsLogger.debug('Processing Event: ' + event)
-
     // Send it via ZeroMQ
-    let msg = {
-      'event': event,
-      'data': e
+    if (this.ws.ws.readyState == this.ws.ws.OPEN) {
+      // Logging for information
+      this.ws.send(msg)
+      cjsLogger.info('[ChimeraJSIntegrator]: sending: ' + msg.event)
     }
-    this.req.send(JSON.stringify(msg))
+    else {
+      cjsLogger.debug('[ChimeraJSIntegrator]: connection lost, not sending: ' + msg.event)
+    }
     
     // Record event for testing
-    this.sendEventDeque.pushFront(event)
+    this.sendEventDeque.pushFront(msg.event)
   }
 
-  receiveEvent(msg: any) {
+  receiveEvent(msg: Message) {
     
     // Record event for testing
-    this.receivedEventDeque.pushFront(msg.toString())
-    console.log('SUB: ' + msg.event + ' ' + msg.data)
+    this.receivedEventDeque.pushFront(msg.event)
 
     // Transmit via the local emitter
-    this.options.emitter.emit('chimera', msg)
+    this.emitter.emit('chimera', msg.data)
+    cjsLogger.debug('[ChimeraJSIntegrator]: emit: ' + msg.event + ' ' + msg.data)
   }
 
   shutdown() {
-    try {
-      this.req.close()
-    } catch (error) {
-
-    }
-    try {
-      this.sub.close()
-    } catch (error) {
-    }
+    this.ws.close()
   }
 }
