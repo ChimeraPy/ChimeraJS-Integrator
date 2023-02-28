@@ -88,7 +88,7 @@ export default class WSClient {
 
   // Send the content
   send(content: Message) {
-    if (this.ws instanceof WebSocket && this.ws.readyState == this.ws.OPEN){
+    if (this.ws.readyState == this.ws.OPEN){
       jsLogger.debug('[ChimeraJS-WSClient]: Sending msg: ' + content.event)
       this.ws.send(JSON.stringify(content))
     }

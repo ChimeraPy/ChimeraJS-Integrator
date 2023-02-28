@@ -9,12 +9,10 @@ jsLogger.useDefaults()
 const cjsLogger: ILogger = jsLogger.get('chimerajs')
 cjsLogger.setLevel(jsLogger.DEBUG)
 
-const port = 3000 + Number(process.env.JEST_WORKER_ID);
-
-
 describe('WebSocket Server with Class Implementation', () => {
 
   test("Server Echoing", async () => {
+    const port = 5555
     const server = new WSServer(port)
 
     // Specifying methods
@@ -44,6 +42,7 @@ describe('WebSocket Server with Class Implementation', () => {
   })
   
   test("Client Starting Before", async () => {
+    const port = 6666
     
     // Create test client
     const client = new WSClient('ws://localhost:' + port.toString(), 1)
@@ -78,6 +77,7 @@ describe('WebSocket Server with Class Implementation', () => {
   }, 20000)
   
   test("Client not connect yet not crashing system", async () => {
+    const port = 6667
     
     // Create test client
     const client = new WSClient('ws://localhost:' + port.toString(), 1)

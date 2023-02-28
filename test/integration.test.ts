@@ -11,9 +11,7 @@ jsLogger.useDefaults()
 const cjsLogger: ILogger = jsLogger.get('chimerajs')
 cjsLogger.setLevel(jsLogger.DEBUG)
 
-const port = 3000 + Number(process.env.JEST_WORKER_ID);
-
-function setup(): {cpjs: ChimeraJSIntegrator, emitter:Emitter<any>} {
+function setup(port: number): {cpjs: ChimeraJSIntegrator, emitter:Emitter<any>} {
       
   // Create emitter and Vue app
   const emitter = mitt<any>()
@@ -27,6 +25,7 @@ function setup(): {cpjs: ChimeraJSIntegrator, emitter:Emitter<any>} {
 describe("Integrator sending messages between Emitter and WSServer", () => {
 
   test("Integrator -> WSServer", async () => {
+    const port = 7777
     const server = new WSServer(port)
 
     // Specifying methods
@@ -38,7 +37,7 @@ describe("Integrator sending messages between Emitter and WSServer", () => {
     await server.start()
     
     // // Create test client
-    let {cpjs, emitter} = setup()
+    let {cpjs, emitter} = setup(port)
     await cpjs.ws.waitConnect()
 
     // // Send client message
@@ -55,6 +54,7 @@ describe("Integrator sending messages between Emitter and WSServer", () => {
   })
 
   test("WSServer -> Integrator", async () => {
+    const port = 8888
     const server = new WSServer(port)
     const testMessage: Message = {event: 'HELLO', data: "This is a test message"}
 
@@ -62,7 +62,7 @@ describe("Integrator sending messages between Emitter and WSServer", () => {
     await server.start()
     
     // Create test client
-    let {cpjs, emitter} = setup()
+    let {cpjs, emitter} = setup(port)
     await cpjs.ws.waitConnect()
 
     // Sending message
