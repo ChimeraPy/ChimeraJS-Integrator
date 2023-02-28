@@ -21,7 +21,7 @@ export default class WSClient {
     this.messages = []
     this.shutdown = false
     this.reconnectInterval = reconnectInterval
-    this.connect()
+    this.ws = this.connect()
   }
 
   connect() {
@@ -33,7 +33,7 @@ export default class WSClient {
       this.onopen(event)
     }
 
-    this.ws.onmessage = (event: MessageEvent) => {
+    this.ws.onmessage = (event: any) => {
       const message: Message = JSON.parse(event.data)
       cjsLogger.info("[ChimeraJS-WSClient]: Obtain msg: " + message.event) 
       this.messages.push(message);
@@ -62,6 +62,8 @@ export default class WSClient {
         }
       }, this.reconnectInterval)
     }
+
+    return this.ws
   }
   
   //////////////////////////////////////////////////////////////////////

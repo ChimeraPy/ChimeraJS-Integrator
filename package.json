@@ -1,6 +1,6 @@
 {
   "name": "chimera-js-integrator",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Communication Extension for JS to ChimeraPy's Pythonic Runtime Environment",
   "main": "src/main.ts",
   "directories": {
