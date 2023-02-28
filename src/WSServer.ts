@@ -12,28 +12,41 @@ export default class WSServer {
   wss: WebSocket
   instance?: WebSocket
   server: Server
-  wsClients: Array<WebSocket>
+  wsClientCounter: number
+  wsClients: Object
 
   constructor(port: number) {
     this.port = port
     this.server = http.createServer();
+    this.wsClientCounter = 0
+    this.wsClients = {}
+    this.saveClient = this.saveClient.bind(this)
 
     this.wss = new WebSocket.Server({ server: this.server })
-    this.wsClients = []
 
     this.wss.on("connection", (webSocket: WebSocket) => {
       cjsLogger.info("[ChimeraJS-WSServer]: Obtain client connection")
-      this.wsClients.push(webSocket)
-      
+      this.saveClient(webSocket)
+      this.onconnection(webSocket)
+     
+      // Attaching methods to specific WS client
       webSocket.on("message", (stringMessage:string) => {
         let message: Message = JSON.parse(stringMessage)
-        cjsLogger.debug("[ChimeraJS-WSServer]: Obtain msg: " + message.type)
+        cjsLogger.debug("[ChimeraJS-WSServer]: Obtain msg: " + message.event)
         this.onmessage(message, webSocket)
       })
     })
   }
 
+  saveClient(client: WebSocket) {
+    this.wsClients[this.wsClientCounter] = client
+    this.wsClientCounter += 1
+  }
+
   // User-defined method
+  onconnection(webSocket: WebSocket) {
+  }
+
   onmessage(message: Message, webSocket: WebSocket) {
   }
 
@@ -44,6 +57,10 @@ export default class WSServer {
         resolve(this.server)
       })
     })
+  }
+
+  send(id: number, msg: Message) {
+    this.wsClients[id].send(JSON.stringify(msg))
   }
 
   close() {

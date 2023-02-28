@@ -15,7 +15,7 @@ export default class WSClient {
   messages: Array<Message>
   shutdown: boolean
 
-  constructor(url: string, closeAfter: number = -1, debug: boolean = true, reconnectInterval: number = 5000) {
+  constructor(url: string, closeAfter: number = -1, reconnectInterval: number = 5000) {
     this.url = url
     this.closeAfter = closeAfter 
     this.messages = []
@@ -35,14 +35,14 @@ export default class WSClient {
 
     this.ws.on("message", (data: string) => {
       const message: Message = JSON.parse(data)
-      cjsLogger.info("[ChimeraJS-WSClient]: Obtain msg: " + message.type) 
+      cjsLogger.info("[ChimeraJS-WSClient]: Obtain msg: " + message.event) 
       this.messages.push(message);
 
+      this.onmessage(message)
       if (this.messages.length === this.closeAfter) {
         this.ws.close();
         this.shutdown = true
       }
-      this.onmessage(message)
     })
 
     this.ws.on('close', (event: CloseEvent) => {
@@ -89,7 +89,7 @@ export default class WSClient {
   // Send the content
   send(content: Message) {
     if (this.ws instanceof WebSocket && this.ws.readyState == this.ws.OPEN){
-      jsLogger.debug('[ChimeraJS-WSClient]: Sending msg: ' + content.type)
+      jsLogger.debug('[ChimeraJS-WSClient]: Sending msg: ' + content.event)
       this.ws.send(JSON.stringify(content))
     }
   }

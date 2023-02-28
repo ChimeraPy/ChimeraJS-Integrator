@@ -30,7 +30,7 @@ describe('WebSocket Server with Class Implementation', () => {
     await client.waitConnect()
 
     // Send client message
-    const testMessage: Message = {type: 'ECHO', data: "This is a test message"}
+    const testMessage: Message = {event: 'ECHO', data: "This is a test message"}
     client.send(testMessage);
 
     // Perform assertions on the response
@@ -61,7 +61,7 @@ describe('WebSocket Server with Class Implementation', () => {
       await client.waitConnect()
 
       // Send client message
-      const testMessage: Message = {type: 'ECHO', data: "This is a test message"}
+      const testMessage: Message = {event: 'ECHO', data: "This is a test message"}
       client.send(testMessage);
 
       // Perform assertions on the response
@@ -83,7 +83,7 @@ describe('WebSocket Server with Class Implementation', () => {
     const client = new WSClient('ws://localhost:' + port.toString(), 1)
 
     // Send client message
-    const testMessage: Message = {type: 'ECHO', data: "This is a test message"}
+    const testMessage: Message = {event: 'ECHO', data: "This is a test message"}
     client.send(testMessage);
 
     // Perform assertions on the response
