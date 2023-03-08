@@ -40,27 +40,14 @@ export default class WSClient {
 
       this.onmessage(message)
       if (this.messages.length === this.closeAfter) {
-        this.ws.close();
         this.shutdown = true
+        this.ws.close();
       }
     }
 
     this.ws.onclose = (event: any) => {
-      if (event.code == 1000) {
-        cjsLogger.info("[ChimeraJS-WSClient]: Closing safely") 
-      }
       this.onclose(event)
-    }
-    
-    this.ws.onerror = (event: any) => {
-      // Keep retrying to connect
-      setTimeout(() => {
-        if (!this.shutdown) {
-          cjsLogger.debug("[ChimeraJS-WSClient]: Reconnecting...")
-          this.ws.close()
-          this.connect() 
-        }
-      }, this.reconnectInterval)
+      this.reconnect()
     }
 
     return this.ws
@@ -94,6 +81,15 @@ export default class WSClient {
       jsLogger.debug('[ChimeraJS-WSClient]: Sending msg: ' + content.event)
       this.ws.send(JSON.stringify(content))
     }
+  }
+
+  reconnect() {
+      setTimeout(() => {
+        if (!this.shutdown) {
+          cjsLogger.debug("[ChimeraJS-WSClient]: Reconnecting...")
+          this.connect() 
+        }
+      }, this.reconnectInterval)
   }
 
   async waitClose() {
