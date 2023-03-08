@@ -50,6 +50,11 @@ export default class WSClient {
       this.reconnect()
     }
 
+    this.ws.onerror = (event: any) => {
+      // Keep retrying to connect
+      cjsLogger.debug("[ChimeraJS-WSClient]: ERROR detected")
+    }
+
     return this.ws
   }
   
